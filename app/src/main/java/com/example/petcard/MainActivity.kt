@@ -1,47 +1,45 @@
 package com.example.petcard
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+import com.example.petcard.ui.shell.PetCardScaffold
 import com.example.petcard.ui.theme.PetcardTheme
 
+/**
+ * Única Activity. Todo el contenido vive en [PetCardScaffold]
+ * (TopBar + BottomBar + NavHost). REGLA DE EQUIPO: no añadir pantallas aquí;
+ * cada pantalla se conecta en el NavHost del shell.
+ */
 class MainActivity : ComponentActivity() {
+    private val pedirAvisos =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+            // Si lo niega, los recordatorios simplemente no se mostrarán.
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        pedirPermisoAvisosSiFalta()
         setContent {
             PetcardTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                PetCardScaffold()
             }
         }
     }
-}
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    PetcardTheme {
-        Greeting("Android")
+    private fun pedirPermisoAvisosSiFalta() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            pedirAvisos.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
     }
 }

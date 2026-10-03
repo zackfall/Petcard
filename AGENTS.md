@@ -5,12 +5,12 @@ Rúbrica oficial en `diseno/Trabajo Autónomo - 0.5 punto - Elaboración de app 
 
 ## Arquitectura obligatoria (la evalúan)
 
-MVVM + Room como única fuente de verdad + repositorio + DI manual:
+MVVM + Room como única fuente de verdad + repositorio + DI con Hilt:
 
 ```
 data/local/      → Room: *Entity, *Dao (lecturas Flow<T>, escrituras suspend fun), PetCardDatabase
-data/            → PetRepository (interfaz) + PetRepositoryImpl
-di/              → AppContainer / DefaultAppContainer (DI manual, NO Hilt)
+data/            → PetRepository (interfaz) + PetRepositoryImpl (@Inject constructor)
+di/              → DatabaseModule + RepositoryModule (Hilt, @InstallIn(SingletonComponent::class))
 notifications/   → Notificaciones (canal + AlarmManager) + RecordatorioReceiver (dueño: shell-owner)
 ui/navigation/   → Routes (rutas congeladas)
 ui/shell/        → PetCardScaffold (TopBar + BottomBar + NavHost), PetCardBottomBar, PlaceholderScreen
@@ -20,14 +20,18 @@ ui/calendario/   → pantalla Calendario (OCUPADA, ver dueños)
 util/            → Dates (fechas como Long = inicio del día local; horas como Int = min. desde medianoche)
 ```
 
+Hilt en tres puntos: `@HiltAndroidApp` en `PetCardApplication`, `@AndroidEntryPoint` en `MainActivity`,
+`@HiltViewModel` + `@Inject constructor(...)` en cada ViewModel. El grafo vive en `di/`; **nunca** crear
+módulos ni `@Provides` fuera de `di/` sin avisar al equipo.
+
 Fechas: **prohibido `java.time`** (minSdk 24). Usar `Dates.inicioDiaMillis()`, `Dates.formatearFecha()`, `Dates.formatearHora()`.
 
 ## Patrón Route / Content (rúbrica 2.5 pts, regla estricta del docente)
 
 Cada pantalla = 3 archivos. Ejemplo real: `ui/eventos/NuevoEvento{ViewModel,Route,Content}.kt`.
 
-- `*ViewModel` — expone UN solo `StateFlow<UiState>` (+ `Channel` para eventos puntuales como navegación). Recibe `PetRepository` por constructor, se crea con `SuViewModel.factory(repo)`. Lógica de guardado en `viewModelScope`. Jamás instancia la BD.
-- `*Route` (stateful) — crea el VM con `viewModel(factory = ...)`, consume con `collectAsStateWithLifecycle()`, traduce eventos puntuales (ej. navegar atrás). Pasa **solo estado inmutable + lambdas** al Content.
+- `*ViewModel` — expone UN solo `StateFlow<UiState>` (+ `Channel` para eventos puntuales como navegación). Recibe `PetRepository` por constructor con `@HiltViewModel class SuViewModel @Inject constructor(repo)`. Lógica de guardado en `viewModelScope`. Jamás instancia la BD.
+- `*Route` (stateful) — crea el VM con `hiltViewModel()`, consume con `collectAsStateWithLifecycle()`, traduce eventos puntuales (ej. navegar atrás). Pasa **solo estado inmutable + lambdas** al Content. El repositorio **no** se pasa como parámetro: solo llega al VM vía Hilt.
 - `*Content` (stateless) — **PROHIBIDO recibir el ViewModel o el repositorio**. Solo datos + lambdas `() -> Unit`. Debe tener `@Preview`.
 
 ```kotlin
@@ -75,7 +79,7 @@ Convención: `feature/<qué-hace-la-pantalla>` (intuitivo, sin números de scree
 2. Ningún `@Composable` hijo recibe ViewModel; estado vía `collectAsStateWithLifecycle()`. [UI 2.5]
 3. Su ViewModel expone un único `StateFlow<UiState>`; escrituras en `viewModelScope`. [MVVM 2.0]
 4. Lecturas vía `Flow` del repositorio; escrituras con `suspend fun`; nada de I/O en hilo principal. [Room 2.5]
-5. ViewModel depende de `PetRepository` (interfaz), creado con `Factory`. [Repo 1.5 + DI 1.5]
+5. ViewModel depende de `PetRepository` (interfaz), inyectado con Hilt (`@HiltViewModel` + `@Inject constructor` + `hiltViewModel()`). [Repo 1.5 + DI 1.5]
 6. Navegación declarada en el `NavHost` central, sin rutas hardcodeadas sueltas. [Nav 1.5]
 7. `@Preview` en cada `*Content`.
 8. Cada integrante debe tener **commits visibles** en el repo nube (sin commits = 0 en la nota grupal).

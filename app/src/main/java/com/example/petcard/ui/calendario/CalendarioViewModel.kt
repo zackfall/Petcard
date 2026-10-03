@@ -1,14 +1,12 @@
 package com.example.petcard.ui.calendario
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.petcard.data.PetRepository
 import com.example.petcard.ui.shared.EventoItem
 import com.example.petcard.ui.shared.aItem
 import com.example.petcard.util.Dates
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -18,6 +16,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.Calendar
+import javax.inject.Inject
 
 /** Una celda de la grilla mensual. `numero == null` = hueco vacío. */
 data class CeldaDia(
@@ -38,7 +37,8 @@ data class CalendarioUiState(
     val cargando: Boolean = true,
 )
 
-class CalendarioViewModel(
+@HiltViewModel
+class CalendarioViewModel @Inject constructor(
     private val repositorio: PetRepository,
 ) : ViewModel() {
     private val hoy = Dates.hoyInicioMillis()
@@ -142,14 +142,6 @@ class CalendarioViewModel(
             )
         }
         return celdas
-    }
-
-    companion object {
-        /** DI manual: el ViewModel jamás instancia el repositorio. */
-        fun factory(repositorio: PetRepository): ViewModelProvider.Factory =
-            viewModelFactory {
-                initializer { CalendarioViewModel(repositorio) }
-            }
     }
 }
 

@@ -33,7 +33,8 @@ import com.example.petcard.ui.calendario.CalendarioRoute
 import com.example.petcard.ui.eventos.EventosPendientesRoute
 import com.example.petcard.ui.eventos.NuevoEventoRoute
 import com.example.petcard.ui.navigation.Routes
-
+import com.example.petcard.ui.inicio.InicioRoute
+import com.example.petcard.ui.mascotas.MascotasRoute
 
 private val destinosPrincipales = listOf(
     DestinoBottomBar(Routes.INICIO, "Inicio", Icons.Filled.Home),
@@ -139,10 +140,18 @@ fun PetCardScaffold(modifier: Modifier = Modifier) {
             modifier = Modifier.padding(padding),
         ) {
             composable(Routes.INICIO) {
-                PlaceholderScreen(nombre = "Inicio / Salud")
+                InicioRoute(
+                    repositorio = repositorio,
+                    alVerTodos = { navController.navigate(Routes.EVENTOS_PENDIENTES) },
+                )
             }
             composable(Routes.MASCOTAS) {
-                PlaceholderScreen(nombre = "Mascotas")
+                MascotasRoute(
+                    repositorio = repositorio,
+                    alAgregarMascota = { navController.navigate(Routes.AGREGAR_MASCOTA) },
+                    alEditar = { /* pendiente: perfil/edición */ },
+                    alNuevoEvento = { navController.navigate(Routes.NUEVO_EVENTO) },
+                )
             }
             composable(
                 route = Routes.PERFIL_MASCOTA,

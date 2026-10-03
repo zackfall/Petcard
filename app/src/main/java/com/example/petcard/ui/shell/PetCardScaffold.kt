@@ -19,7 +19,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -28,7 +27,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.petcard.PetCardApplication
 import com.example.petcard.ui.calendario.CalendarioRoute
 import com.example.petcard.ui.eventos.EventosPendientesRoute
 import com.example.petcard.ui.eventos.NuevoEventoRoute
@@ -131,9 +129,6 @@ fun PetCardScaffold(modifier: Modifier = Modifier) {
             )
         },
     ) { padding ->
-        val app = LocalContext.current.applicationContext as PetCardApplication
-        val repositorio = app.container.petRepository
-
         NavHost(
             navController = navController,
             startDestination = Routes.INICIO,
@@ -141,13 +136,11 @@ fun PetCardScaffold(modifier: Modifier = Modifier) {
         ) {
             composable(Routes.INICIO) {
                 InicioRoute(
-                    repositorio = repositorio,
                     alVerTodos = { navController.navigate(Routes.EVENTOS_PENDIENTES) },
                 )
             }
             composable(Routes.MASCOTAS) {
                 MascotasRoute(
-                    repositorio = repositorio,
                     alAgregarMascota = { navController.navigate(Routes.AGREGAR_MASCOTA) },
                     alEditar = { /* pendiente: perfil/edición */ },
                     alNuevoEvento = { navController.navigate(Routes.NUEVO_EVENTO) },
@@ -164,16 +157,14 @@ fun PetCardScaffold(modifier: Modifier = Modifier) {
             }
             composable(Routes.NUEVO_EVENTO) {
                 NuevoEventoRoute(
-                    repositorio = repositorio,
                     alGuardar = { navController.popBackStack() },
                 )
             }
             composable(Routes.CALENDARIO) {
-                CalendarioRoute(repositorio = repositorio)
+                CalendarioRoute()
             }
             composable(Routes.EVENTOS_PENDIENTES) {
                 EventosPendientesRoute(
-                    repositorio = repositorio,
                     alCrearEvento = { navController.navigate(Routes.NUEVO_EVENTO) },
                 )
             }
@@ -187,5 +178,5 @@ fun PetCardScaffold(modifier: Modifier = Modifier) {
     }
 }
 
-// Los ViewModels se crean dentro de cada *Route con su Factory;
-// el shell solo provee el repositorio del AppContainer.
+// Los ViewModels se crean dentro de cada *Route con Hilt (hiltViewModel());
+// el shell solo conecta las rutas en el NavHost.

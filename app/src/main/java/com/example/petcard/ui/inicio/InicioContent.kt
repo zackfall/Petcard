@@ -17,8 +17,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.Column
+import com.example.petcard.ui.theme.PetcardTheme
 
 @Composable
 fun InicioContent(
@@ -86,5 +88,26 @@ fun InicioContent(
                 Text(evento.fecha, style = MaterialTheme.typography.labelSmall)
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun InicioPreview() {
+    PetcardTheme {
+        InicioContent(
+            estado = InicioUiState(
+                proximos = listOf(
+                    EventoInicio(1, "Vacuna de la Rabia", "Max", "24 oct 2026"),
+                    EventoInicio(2, "Chequeo de Peso", "Luna", "28 oct 2026"),
+                ),
+                historial = listOf(
+                    EventoInicio(3, "Visita al Veterinario - Control", "Max", "15 oct 2026"),
+                    EventoInicio(4, "Desparasitación interna", "Luna", "1 oct 2026"),
+                ),
+                cargando = false,
+            ),
+            onVerTodos = {},
+        )
     }
 }

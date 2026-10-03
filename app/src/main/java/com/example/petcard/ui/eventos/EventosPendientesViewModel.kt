@@ -1,18 +1,17 @@
 package com.example.petcard.ui.eventos
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.petcard.data.PetRepository
 import com.example.petcard.ui.shared.EventoItem
 import com.example.petcard.ui.shared.aItem
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /** Estado único de la pantalla Eventos pendientes. */
 data class PendientesUiState(
@@ -20,7 +19,8 @@ data class PendientesUiState(
     val cargando: Boolean = true,
 )
 
-class EventosPendientesViewModel(
+@HiltViewModel
+class EventosPendientesViewModel @Inject constructor(
     private val repositorio: PetRepository,
 ) : ViewModel() {
     val uiState: StateFlow<PendientesUiState> = combine(
@@ -46,13 +46,5 @@ class EventosPendientesViewModel(
         viewModelScope.launch {
             repositorio.obtenerEvento(id)?.let { repositorio.eliminarEvento(it) }
         }
-    }
-
-    companion object {
-        /** DI manual: el ViewModel jamás instancia el repositorio. */
-        fun factory(repositorio: PetRepository): ViewModelProvider.Factory =
-            viewModelFactory {
-                initializer { EventosPendientesViewModel(repositorio) }
-            }
     }
 }

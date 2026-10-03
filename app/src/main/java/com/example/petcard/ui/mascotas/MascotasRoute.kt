@@ -1,23 +1,21 @@
 package com.example.petcard.ui.mascotas
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.petcard.data.PetRepository
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.petcard.data.local.MascotaEntity
 
 @Composable
 fun MascotasRoute(
-    repositorio: PetRepository,
     alAgregarMascota: () -> Unit,
     alEditar: (MascotaEntity) -> Unit,
     alNuevoEvento: (MascotaEntity) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val viewModel: MascotasViewModel = viewModel(factory = MascotasViewModel.factory(repositorio))
-    val estado by viewModel.estado.collectAsState()
+    val viewModel: MascotasViewModel = hiltViewModel()
+    val estado by viewModel.estado.collectAsStateWithLifecycle()
 
     MascotasContent(
         estado = estado,

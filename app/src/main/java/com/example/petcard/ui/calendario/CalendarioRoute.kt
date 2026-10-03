@@ -5,24 +5,20 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.petcard.data.PetRepository
 import com.example.petcard.notifications.Notificaciones
 
 /**
- * Contenedor CON estado del Calendario: crea su ViewModel con la Factory,
+ * Contenedor CON estado del Calendario: crea su ViewModel con Hilt,
  * consume el estado con `collectAsStateWithLifecycle()` y traduce los eventos
  * puntuales en programar/cancelar alarmas. Pasa solo estado + lambdas.
  */
 @Composable
 fun CalendarioRoute(
-    repositorio: PetRepository,
     modifier: Modifier = Modifier,
 ) {
-    val vm: CalendarioViewModel = viewModel(
-        factory = CalendarioViewModel.factory(repositorio),
-    )
+    val vm: CalendarioViewModel = hiltViewModel()
     val estado by vm.uiState.collectAsStateWithLifecycle()
     val contexto = LocalContext.current
 

@@ -20,8 +20,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.petcard.data.local.MascotaEntity
+import com.example.petcard.ui.theme.PetcardTheme
 
 @Composable
 fun MascotasContent(
@@ -76,5 +78,39 @@ fun MascotasContent(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun MascotasPreview() {
+    PetcardTheme {
+        MascotasContent(
+            estado = MascotasUiState(
+                mascotas = listOf(
+                    MascotaEntity(
+                        id = 1,
+                        nombre = "Max",
+                        especie = "Perro",
+                        raza = "Golden Retriever",
+                        fechaNacimientoMillis = 0L,
+                        pesoKg = 32.5,
+                    ),
+                    MascotaEntity(
+                        id = 2,
+                        nombre = "Luna",
+                        especie = "Gato",
+                        raza = "Siamés",
+                        fechaNacimientoMillis = 0L,
+                        pesoKg = 4.2,
+                    ),
+                ),
+                cargando = false,
+            ),
+            onAgregarMascota = {},
+            onEditar = {},
+            onNuevoEvento = {},
+            onEliminar = {},
+        )
     }
 }

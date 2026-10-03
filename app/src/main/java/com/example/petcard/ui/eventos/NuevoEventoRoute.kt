@@ -5,26 +5,22 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.petcard.data.PetRepository
 import com.example.petcard.notifications.Notificaciones
 
 /**
- * Contenedor CON estado de Nuevo Evento: crea su ViewModel con la Factory,
+ * Contenedor CON estado de Nuevo Evento: crea su ViewModel con Hilt,
  * consume el estado con `collectAsStateWithLifecycle()` y traduce el evento
  * puntual `Guardado` en (1) programar el aviso y (2) navegar atrás.
  * Pasa solo estado + lambdas al Content.
  */
 @Composable
 fun NuevoEventoRoute(
-    repositorio: PetRepository,
     alGuardar: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val vm: NuevoEventoViewModel = viewModel(
-        factory = NuevoEventoViewModel.factory(repositorio),
-    )
+    val vm: NuevoEventoViewModel = hiltViewModel()
     val estado by vm.uiState.collectAsStateWithLifecycle()
     val contexto = LocalContext.current
 

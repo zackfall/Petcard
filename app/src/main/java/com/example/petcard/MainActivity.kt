@@ -11,12 +11,14 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import com.example.petcard.ui.shell.PetCardScaffold
 import com.example.petcard.ui.theme.PetcardTheme
+import dagger.hilt.android.AndroidEntryPoint
 
 /**
  * Única Activity. Todo el contenido vive en [PetCardScaffold]
  * (TopBar + BottomBar + NavHost). REGLA DE EQUIPO: no añadir pantallas aquí;
  * cada pantalla se conecta en el NavHost del shell.
  */
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val pedirAvisos =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) {

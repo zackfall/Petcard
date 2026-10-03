@@ -5,9 +5,10 @@ import com.example.petcard.data.local.EventoEntity
 import com.example.petcard.data.local.MascotaDao
 import com.example.petcard.data.local.MascotaEntity
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
 /** Implementación Room del [PetRepository]. */
-class PetRepositoryImpl(
+class PetRepositoryImpl @Inject constructor(
     private val mascotaDao: MascotaDao,
     private val eventoDao: EventoDao,
 ) : PetRepository {

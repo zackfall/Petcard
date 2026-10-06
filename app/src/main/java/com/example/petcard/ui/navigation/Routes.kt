@@ -14,6 +14,7 @@ package com.example.petcard.ui.navigation
  * - screen-container-6.pdf -> EVENTOS_PENDIENTES
  * - screen-container-7.pdf -> CONFIGURACION
  * - screen-container-8.pdf -> PRIVACIDAD
+ * - (sin diseño propio)    -> ACERCA (Acerca de PetCard)
  */
 object Routes {
     const val INICIO = "inicio"
@@ -25,6 +26,7 @@ object Routes {
     const val EVENTOS_PENDIENTES = "eventos_pendientes"
     const val CONFIGURACION = "configuracion"
     const val PRIVACIDAD = "privacidad"
+    const val ACERCA = "acerca"
 
     const val ARG_MASCOTA_ID = "mascotaId"
 

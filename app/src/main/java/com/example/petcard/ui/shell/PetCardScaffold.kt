@@ -28,6 +28,9 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.petcard.ui.calendario.CalendarioRoute
+import com.example.petcard.ui.config.AcercaRoute
+import com.example.petcard.ui.config.ConfiguracionRoute
+import com.example.petcard.ui.config.PrivacidadRoute
 import com.example.petcard.ui.eventos.EventosPendientesRoute
 import com.example.petcard.ui.eventos.NuevoEventoRoute
 import com.example.petcard.ui.navigation.Routes
@@ -50,6 +53,7 @@ private fun tituloPara(ruta: String?): String = when (ruta) {
     Routes.EVENTOS_PENDIENTES -> "Evento de Salud"
     Routes.CONFIGURACION -> "Configuración"
     Routes.PRIVACIDAD -> "Privacidad de datos"
+    Routes.ACERCA -> "Acerca de PetCard"
     else -> if (ruta?.startsWith("perfil_mascota/") == true) "Perfil de Mascota" else "PetCard"
 }
 
@@ -169,10 +173,16 @@ fun PetCardScaffold(modifier: Modifier = Modifier) {
                 )
             }
             composable(Routes.CONFIGURACION) {
-                PlaceholderScreen(nombre = "Configuración")
+                ConfiguracionRoute(
+                    onPrivacidad = { navController.navigate(Routes.PRIVACIDAD) },
+                    onAcerca = { navController.navigate(Routes.ACERCA) },
+                )
             }
             composable(Routes.PRIVACIDAD) {
-                PlaceholderScreen(nombre = "Privacidad de datos")
+                PrivacidadRoute()
+            }
+            composable(Routes.ACERCA) {
+                AcercaRoute()
             }
         }
     }

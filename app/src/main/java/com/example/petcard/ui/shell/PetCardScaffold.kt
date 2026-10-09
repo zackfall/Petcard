@@ -35,7 +35,9 @@ import com.example.petcard.ui.eventos.EventosPendientesRoute
 import com.example.petcard.ui.eventos.NuevoEventoRoute
 import com.example.petcard.ui.navigation.Routes
 import com.example.petcard.ui.inicio.InicioRoute
+import com.example.petcard.ui.mascotas.AgregarMascotaRoute
 import com.example.petcard.ui.mascotas.MascotasRoute
+import com.example.petcard.ui.mascotas.PerfilMascotaRoute
 
 private val destinosPrincipales = listOf(
     DestinoBottomBar(Routes.INICIO, "Inicio", Icons.Filled.Home),
@@ -146,7 +148,9 @@ fun PetCardScaffold(modifier: Modifier = Modifier) {
             composable(Routes.MASCOTAS) {
                 MascotasRoute(
                     alAgregarMascota = { navController.navigate(Routes.AGREGAR_MASCOTA) },
-                    alEditar = { /* pendiente: perfil/edición */ },
+                    alEditar = { mascota ->
+                        navController.navigate(Routes.perfilMascota(mascota.id))
+                    },
                     alNuevoEvento = { navController.navigate(Routes.NUEVO_EVENTO) },
                 )
             }
@@ -154,10 +158,14 @@ fun PetCardScaffold(modifier: Modifier = Modifier) {
                 route = Routes.PERFIL_MASCOTA,
                 arguments = listOf(navArgument(Routes.ARG_MASCOTA_ID) { type = NavType.LongType }),
             ) {
-                PlaceholderScreen(nombre = "Perfil de Mascota")
+                PerfilMascotaRoute(
+                    alNuevoEvento = { navController.navigate(Routes.NUEVO_EVENTO) },
+                )
             }
             composable(Routes.AGREGAR_MASCOTA) {
-                PlaceholderScreen(nombre = "Agregar Mascota")
+                AgregarMascotaRoute(
+                    alGuardar = { navController.popBackStack() },
+                )
             }
             composable(Routes.NUEVO_EVENTO) {
                 NuevoEventoRoute(

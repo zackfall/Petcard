@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.petcard.ui.shared.TituloSeccion
 import com.example.petcard.ui.theme.PetcardTheme
 
 /**
@@ -57,7 +58,6 @@ fun ConfiguracionContent(
                 icono = Icons.Filled.WbSunny,
                 titulo = "Modo Claro / Oscuro",
             ) {
-                // El tema aún no se cambia: el switch solo se muestra en pantalla.
                 Switch(
                     checked = estado.modoOscuro,
                     onCheckedChange = onModoOscuroChange,
@@ -110,16 +110,6 @@ fun ConfiguracionContent(
             }
         }
     }
-}
-
-@Composable
-private fun TituloSeccion(texto: String, modifier: Modifier = Modifier) {
-    Text(
-        text = texto.uppercase(),
-        style = MaterialTheme.typography.labelMedium,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = modifier.padding(top = 16.dp, bottom = 4.dp),
-    )
 }
 
 @Composable

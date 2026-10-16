@@ -9,9 +9,14 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import com.example.petcard.data.AjustesRepository
 import com.example.petcard.ui.shell.PetCardScaffold
 import com.example.petcard.ui.theme.PetcardTheme
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 /**
  * Única Activity. Todo el contenido vive en [PetCardScaffold]
@@ -20,6 +25,10 @@ import dagger.hilt.android.AndroidEntryPoint
  */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    /** Preferencias de la app (tema); solo puede vivir fuera de los ViewModels. */
+    @Inject
+    lateinit var ajustes: AjustesRepository
+
     private val pedirAvisos =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) {
             // Si lo niega, los recordatorios simplemente no se mostrarán.
@@ -30,7 +39,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         pedirPermisoAvisosSiFalta()
         setContent {
-            PetcardTheme {
+            // null = el usuario nunca eligió tema: sigue al sistema.
+            val modoOscuro by ajustes.modoOscuro.collectAsState()
+            PetcardTheme(darkTheme = modoOscuro ?: isSystemInDarkTheme()) {
                 PetCardScaffold()
             }
         }

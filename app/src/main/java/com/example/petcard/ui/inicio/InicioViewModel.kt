@@ -4,22 +4,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.petcard.data.PetRepository
 import com.example.petcard.data.local.EventoEntity
+import com.example.petcard.util.Dates
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
 class InicioViewModel @Inject constructor(
     repositorio: PetRepository,
 ) : ViewModel() {
-
-    private val formato = SimpleDateFormat("d MMM yyyy", Locale("es"))
 
     val estado: StateFlow<InicioUiState> = combine(
         repositorio.observarMascotas(),
@@ -31,7 +27,7 @@ class InicioViewModel @Inject constructor(
             id = id,
             titulo = titulo,
             mascota = nombres[mascotaId] ?: "?",
-            fecha = formato.format(Date(fechaMillis)),
+            fecha = Dates.formatearFecha(fechaMillis),
         )
 
         InicioUiState(

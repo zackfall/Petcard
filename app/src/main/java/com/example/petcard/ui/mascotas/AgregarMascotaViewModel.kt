@@ -6,6 +6,7 @@ import com.example.petcard.data.PetRepository
 import com.example.petcard.data.local.MascotaEntity
 import com.example.petcard.util.Dates
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,51 +33,64 @@ class AgregarMascotaViewModel @Inject constructor(
     private val _eventos = Channel<AgregarMascotaEvent>(Channel.BUFFERED)
     val eventos = _eventos.receiveAsFlow()
 
-    fun onNombreChange(valor: String) {
-        formulario.value = formulario.value.copy(nombre = valor)
+    private fun cambiar(transformacion: (AgregarMascotaUiState) -> AgregarMascotaUiState) {
+        formulario.value = transformacion(formulario.value).copy(error = null)
     }
 
-    fun onEspecieChange(valor: String) {
-        formulario.value = formulario.value.copy(especie = valor)
-    }
+    fun onNombreChange(valor: String) = cambiar { it.copy(nombre = valor) }
 
-    fun onRazaChange(valor: String) {
-        formulario.value = formulario.value.copy(raza = valor)
-    }
+    fun onEspecieChange(valor: String) = cambiar { it.copy(especie = valor) }
 
-    fun onEdadChange(valor: String) {
-        formulario.value = formulario.value.copy(edadAnos = valor.filter { it.isDigit() })
-    }
+    fun onRazaChange(valor: String) = cambiar { it.copy(raza = valor) }
 
-    fun onFotoChange(uri: String?) {
-        formulario.value = formulario.value.copy(fotoUri = uri)
-    }
+    fun onEdadChange(valor: String) =
+        cambiar { it.copy(edadAnos = valor.filter { c -> c.isDigit() }) }
+
+    fun onPesoChange(valor: String) = cambiar { it.copy(pesoKg = formatearPeso(valor)) }
+
+    fun onFotoChange(uri: String?) = cambiar { it.copy(fotoUri = uri) }
 
     fun onGuardar() {
         val actual = formulario.value
         if (!actual.puedeGuardar) return
-        formulario.value = actual.copy(guardando = true)
+        formulario.value = actual.copy(guardando = true, error = null)
         viewModelScope.launch {
-            val id = repositorio.guardarMascota(
-                MascotaEntity(
-                    nombre = actual.nombre.trim(),
-                    especie = actual.especie.trim(),
-                    raza = actual.raza.trim(),
-                    fechaNacimientoMillis = nacimientoPorEdad(actual.edadAnosInt!!),
-                    fotoUri = actual.fotoUri,
-                ),
-            )
-            _eventos.send(AgregarMascotaEvent.Guardado(id))
+            try {
+                val id = repositorio.guardarMascota(
+                    MascotaEntity(
+                        nombre = actual.nombre.trim(),
+                        especie = actual.especie.trim(),
+                        raza = actual.raza.trim(),
+                        fechaNacimientoMillis = nacimientoPorEdad(actual.edadAnosInt!!),
+                        fotoUri = actual.fotoUri,
+                        pesoKg = actual.pesoKgDouble,
+                    ),
+                )
+                formulario.value = formulario.value.copy(guardando = false)
+                _eventos.send(AgregarMascotaEvent.Guardado(id))
+            } catch (cancelado: CancellationException) {
+                throw cancelado
+            } catch (fallo: Exception) {
+                formulario.value = formulario.value.copy(
+                    guardando = false,
+                    error = "No se pudo guardar la mascota. Inténtalo de nuevo.",
+                )
+            }
         }
     }
 }
 
-/** Convierte la edad del formulario en la fecha de nacimiento que exige Room. */
+/**
+ * Convierte la edad del formulario en la fecha de nacimiento que exige Room.
+ * Si hoy es 29 de febrero y el año calculado no es bisiesto, se usa el 28:
+ * con un 29/2 inexistente `Calendar` (lenient) rueda a 1 de marzo y la edad
+ * mostrada después quedaría un año menor.
+ */
 private fun nacimientoPorEdad(edadAnos: Int): Long {
     val hoy = Calendar.getInstance()
-    return Dates.inicioDiaMillis(
-        hoy.get(Calendar.YEAR) - edadAnos,
-        hoy.get(Calendar.MONTH) + 1,
-        hoy.get(Calendar.DAY_OF_MONTH),
-    )
+    val anio = hoy.get(Calendar.YEAR) - edadAnos
+    val mes = hoy.get(Calendar.MONTH) + 1
+    val dia = hoy.get(Calendar.DAY_OF_MONTH)
+    val diaSeguro = if (mes == 2 && dia == 29 && !Dates.esBisiesto(anio)) 28 else dia
+    return Dates.inicioDiaMillis(anio, mes, diaSeguro)
 }

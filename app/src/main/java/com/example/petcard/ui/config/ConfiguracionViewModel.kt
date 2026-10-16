@@ -2,6 +2,7 @@ package com.example.petcard.ui.config
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.petcard.data.AjustesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,7 +20,9 @@ sealed interface ConfiguracionEvent {
 }
 
 @HiltViewModel
-class ConfiguracionViewModel @Inject constructor() : ViewModel() {
+class ConfiguracionViewModel @Inject constructor(
+    private val ajustes: AjustesRepository,
+) : ViewModel() {
     private val _uiState = MutableStateFlow(ConfiguracionUiState())
     val uiState: StateFlow<ConfiguracionUiState> = _uiState.asStateFlow()
 
@@ -27,16 +30,24 @@ class ConfiguracionViewModel @Inject constructor() : ViewModel() {
     val eventos = _eventos.receiveAsFlow()
 
     /**
-     * Refleja el estado real de las notificaciones (la Route lo lee del canal).
-     * No toca el modo oscuro, que vive solo en la UI hasta que se implemente.
+     * Refleja el estado real de ambos ajustes. El tema persistido manda;
+     * si el usuario aún no eligió, se usa el modo del sistema [modoOscuroSistema]
+     * (la Route lo lee con `isSystemInDarkTheme()`).
      */
-    fun inicializar(notificacionesPush: Boolean) {
-        _uiState.update { it.copy(notificacionesPush = notificacionesPush) }
+    fun inicializar(notificacionesPush: Boolean, modoOscuroSistema: Boolean) {
+        _uiState.update {
+            it.copy(
+                notificacionesPush = notificacionesPush,
+                modoOscuro = ajustes.modoOscuro.value ?: modoOscuroSistema,
+            )
+        }
     }
 
-    /** Tema claro/oscuro: pendiente, por ahora solo mueve el switch. */
     fun onModoOscuroChange(activado: Boolean) {
         _uiState.update { it.copy(modoOscuro = activado) }
+        viewModelScope.launch {
+            ajustes.guardarModoOscuro(activado)
+        }
     }
 
     fun onNotificacionesPushChange(activas: Boolean) {

@@ -1,5 +1,6 @@
 package com.example.petcard.ui.mascotas
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -57,9 +58,7 @@ internal fun FotoMascota(
         val uri = fotoUri ?: return@produceState
         value = withContext(Dispatchers.IO) {
             runCatching {
-                contexto.contentResolver.openInputStream(Uri.parse(uri))?.use {
-                    BitmapFactory.decodeStream(it)
-                }
+                decodificarFoto(contexto, Uri.parse(uri))
             }.getOrNull()
         }
     }
@@ -86,6 +85,31 @@ internal fun FotoMascota(
                 tint = VerdePetCard,
             )
         }
+    }
+}
+
+/**
+ * Decodifica con `inSampleSize` en vez del bitmap completo: una foto de la
+ * cámara de 12 MP cargada a tamaño real podía agotar la memoria (OOM).
+ * Primero se leen las medidas y luego se muestra hasta [maxLado] px por lado.
+ */
+private fun decodificarFoto(
+    contexto: Context,
+    uri: Uri,
+    maxLado: Int = 1024,
+): Bitmap? {
+    val medidas = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+    contexto.contentResolver.openInputStream(uri)?.use {
+        BitmapFactory.decodeStream(it, null, medidas)
+    }
+    if (medidas.outWidth <= 0 || medidas.outHeight <= 0) return null
+    var muestra = 1
+    while (medidas.outWidth / muestra > maxLado || medidas.outHeight / muestra > maxLado) {
+        muestra *= 2
+    }
+    val opciones = BitmapFactory.Options().apply { inSampleSize = muestra }
+    return contexto.contentResolver.openInputStream(uri)?.use {
+        BitmapFactory.decodeStream(it, null, opciones)
     }
 }
 

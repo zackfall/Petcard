@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.petcard.ui.shared.TituloSeccion
 import com.example.petcard.ui.theme.PetcardTheme
 
 /**
@@ -122,16 +123,6 @@ fun AcercaContent(
             )
         }
     }
-}
-
-@Composable
-private fun TituloSeccion(texto: String, modifier: Modifier = Modifier) {
-    Text(
-        text = texto.uppercase(),
-        style = MaterialTheme.typography.labelMedium,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = modifier.padding(top = 8.dp, bottom = 4.dp),
-    )
 }
 
 @Preview(showBackground = true)

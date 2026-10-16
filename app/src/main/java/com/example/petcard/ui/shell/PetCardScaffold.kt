@@ -71,9 +71,8 @@ private fun esRutaRaiz(ruta: String?): Boolean = ruta in rutasRaiz
 
 /**
  * Shell de la app (dueño: responsable de TopBar + BottomBar + navegación).
- * Los integrantes conectan sus pantallas en el [NavHost] sin modificar
- * el resto de este archivo: reemplazan el `PlaceholderScreen` de su ruta
- * por su `*Route` real.
+ * Todas las pantallas están conectadas aquí en el [NavHost]; para cambiar una
+ * basta reemplazar su `*Route` en la entrada correspondiente.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -98,12 +97,33 @@ fun PetCardScaffold(modifier: Modifier = Modifier) {
                     // Diseño: en el home van campana (pendientes) y ajustes.
                     if (rutaActual == Routes.INICIO) {
                         IconButton(
-                            onClick = { navController.navigate(Routes.EVENTOS_PENDIENTES) },
+                            onClick = {
+                                // Eventos Pendientes también es tab de la BottomBar: navegar
+                                // como tab evita duplicar la entrada en el stack y que el
+                                // botón Inicio "rebote" de vuelta a eventos.
+                                navController.navigate(Routes.EVENTOS_PENDIENTES) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            },
                         ) {
                             Icon(Icons.Filled.Notifications, contentDescription = "Recordatorios")
                         }
                         IconButton(
-                            onClick = { navController.navigate(Routes.CONFIGURACION) },
+                            onClick = {
+                                // Config no es tab: se apila sobre Inicio sin guardar su
+                                // estado, así al cambiar de pestaña queda fuera del stack
+                                // y volver al home muestra el home limpio.
+                                navController.navigate(Routes.CONFIGURACION) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = false
+                                    }
+                                    launchSingleTop = true
+                                }
+                            },
                         ) {
                             Icon(Icons.Filled.Settings, contentDescription = "Configuración")
                         }
@@ -142,7 +162,15 @@ fun PetCardScaffold(modifier: Modifier = Modifier) {
         ) {
             composable(Routes.INICIO) {
                 InicioRoute(
-                    alVerTodos = { navController.navigate(Routes.EVENTOS_PENDIENTES) },
+                    alVerTodos = {
+                        navController.navigate(Routes.EVENTOS_PENDIENTES) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
                 )
             }
             composable(Routes.MASCOTAS) {
@@ -182,8 +210,12 @@ fun PetCardScaffold(modifier: Modifier = Modifier) {
             }
             composable(Routes.CONFIGURACION) {
                 ConfiguracionRoute(
-                    onPrivacidad = { navController.navigate(Routes.PRIVACIDAD) },
-                    onAcerca = { navController.navigate(Routes.ACERCA) },
+                    onPrivacidad = {
+                        navController.navigate(Routes.PRIVACIDAD) { launchSingleTop = true }
+                    },
+                    onAcerca = {
+                        navController.navigate(Routes.ACERCA) { launchSingleTop = true }
+                    },
                 )
             }
             composable(Routes.PRIVACIDAD) {

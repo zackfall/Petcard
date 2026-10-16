@@ -38,6 +38,7 @@ fun AgregarMascotaContent(
     onEspecieChange: (String) -> Unit,
     onRazaChange: (String) -> Unit,
     onEdadChange: (String) -> Unit,
+    onPesoChange: (String) -> Unit,
     onElegirFoto: () -> Unit,
     onGuardar: () -> Unit,
     modifier: Modifier = Modifier,
@@ -99,6 +100,24 @@ fun AgregarMascotaContent(
             keyboardType = KeyboardType.Number,
         )
 
+        // --- Peso ---
+        CampoTexto(
+            etiqueta = "Peso (kg)",
+            valor = estado.pesoKg,
+            onValorChange = onPesoChange,
+            placeholder = "Ej. 4.5",
+            keyboardType = KeyboardType.Decimal,
+        )
+
+        estado.error?.let { mensaje ->
+            Text(
+                text = mensaje,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+
         Button(
             onClick = onGuardar,
             enabled = estado.puedeGuardar,
@@ -151,6 +170,7 @@ private fun AgregarMascotaPreview() {
             onEspecieChange = {},
             onRazaChange = {},
             onEdadChange = {},
+            onPesoChange = {},
             onElegirFoto = {},
             onGuardar = {},
         )

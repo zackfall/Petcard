@@ -46,6 +46,7 @@ internal val VerdeBoton = Color(0xFF5BC98C)
  * hay foto, el icono del diseño. La lectura del `content://` se hace en IO.
  */
 @Composable
+// Dibuja la foto de la mascota. Si todavía no hay foto, muestra un ícono de huellita
 internal fun FotoMascota(
     fotoUri: String?,
     modifier: Modifier = Modifier,
@@ -54,6 +55,11 @@ internal fun FotoMascota(
     tamanoIcono: Dp = 48.dp,
 ) {
     val contexto = LocalContext.current
+    // produceState: ejecuta trabajo en segundo plano y va publicando un valor a la pantalla. Empieza en null (sin foto).
+    //key1 = fotoUri: si la foto cambia, se vuelve a ejecutar.
+    //fotoUri ?: return@produceState: si no hay foto, termina y se queda en null.
+    //Dispatchers.IO: leer un archivo es lento, así que se hace en otro hilo para no trabar la interfaz.
+    //runCatching { ... }.getOrNull(): si algo falla (archivo borrado, imagen dañada), en vez de que la app se cierre, el resultado es null y se muestra el ícono.
     val bitmap = produceState<Bitmap?>(initialValue = null, key1 = fotoUri) {
         val uri = fotoUri ?: return@produceState
         value = withContext(Dispatchers.IO) {
@@ -63,6 +69,9 @@ internal fun FotoMascota(
         }
     }
 
+    // Box: un contenedor que apila cosas; aquí recorta la forma y pone un fondo gris suave.
+    //Si hay foto, se muestra con ContentScale.Crop (llena el espacio recortando lo que sobre, sin deformar).
+    //Si no, se muestra el ícono en verde.
     Box(
         modifier = modifier
             .clip(forma)
@@ -116,6 +125,7 @@ private fun decodificarFoto(
 /** Edad completa en años al día de hoy (sin `java.time`: minSdk 24). */
 internal fun edadEnAnos(nacimientoMillis: Long): Int {
     val hoy = Calendar.getInstance()
+    // Resta el año de nacimiento al actual, y si todavía no ha llegado el cumpleaños de este año, resta 1. Con coerceAtLeast(0) se asegura de que nunca salga una edad negativa.
     val (anio, mes, dia) = Dates.desglosar(nacimientoMillis)
     var edad = hoy.get(Calendar.YEAR) - anio
     val mesHoy = hoy.get(Calendar.MONTH) + 1

@@ -43,6 +43,12 @@ fun AgregarMascotaContent(
     onGuardar: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+
+    //fillMaxSize(): ocupa toda la pantalla.
+    //verticalScroll(...): permite deslizar hacia abajo si el teclado o el contenido no caben.
+    //padding(16.dp): margen alrededor.
+    //spacedBy(12.dp): 12 dp de separación entre cada elemento.
+    //CenterHorizontally: centra los elementos.
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -52,6 +58,7 @@ fun AgregarMascotaContent(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         // --- Foto de la mascota ---
+        //Muestra la foto de la mascota (o un ícono de imagen si no hay). Con clickable, al tocarla se llama a onElegirFoto, que en el Route abre la galería.
         FotoMascota(
             fotoUri = estado.fotoUri,
             modifier = Modifier
@@ -109,6 +116,7 @@ fun AgregarMascotaContent(
             keyboardType = KeyboardType.Decimal,
         )
 
+        // El ?.let significa: “si error no es null, muestra el texto”. Si no hay error, no aparece nada. Se pinta con el color de error del tema
         estado.error?.let { mensaje ->
             Text(
                 text = mensaje,
@@ -118,6 +126,8 @@ fun AgregarMascotaContent(
             )
         }
 
+        //enabled = estado.puedeGuardar: el botón está apagado hasta que el formulario sea válido.
+        //El texto cambia a “Guardando...” mientras se guarda.
         Button(
             onClick = onGuardar,
             enabled = estado.puedeGuardar,

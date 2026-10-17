@@ -38,6 +38,9 @@ import com.example.petcard.util.Dates
  */
 @Composable
 fun PerfilMascotaContent(
+    //estado: trae todo lo necesario: cargando, encontrada, mascota, subtitulo y eventos.
+    //onNuevoEvento: avisa cuando el usuario toca “+ Nuevo Evento”. Aquí no recibe la mascota,
+    // porque este perfil ya es de una mascota concreta.
     estado: PerfilMascotaUiState,
     onNuevoEvento: () -> Unit,
     modifier: Modifier = Modifier,
@@ -49,6 +52,12 @@ fun PerfilMascotaContent(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        // 1. Cargando: se muestra un CircularProgressIndicator (la ruedita de carga) con un Spacer de 48 dp arriba para separarlo del borde.
+        //
+        //2. No encontrada: si ya cargó pero la mascota no existe (por ejemplo, se borró),
+        // muestra “No se encontró la mascota.” en gris. Esto conecta con observarMascota(id), que devolvía MascotaEntity? y podía emitir null.
+        //
+        //3. Normal (else): dibuja el perfil.
         when {
             estado.cargando -> {
                 Spacer(Modifier.height(48.dp))
@@ -66,6 +75,7 @@ fun PerfilMascotaContent(
             }
 
             else -> {
+                // El !! dice “estoy seguro de que no es null”. Es seguro porque solo se llega aquí si no está cargando y sí fue encontrada.
                 val mascota = estado.mascota!!
 
                 FotoMascota(
@@ -89,6 +99,8 @@ fun PerfilMascotaContent(
                     textAlign = TextAlign.Center,
                 )
 
+                //TextButton es un botón sin fondo, solo texto, y llama a onNuevoEvento. Debajo, el título “Historial de Eventos” con fillMaxWidth() para alinearse
+                // a la izquierda.
                 TextButton(onClick = onNuevoEvento) {
                     Text(
                         text = "+ Nuevo Evento",
@@ -103,6 +115,7 @@ fun PerfilMascotaContent(
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                 )
 
+                // Si no hay eventos, muestra un mensaje. Y luego dibuja un ItemHistorial por cada evento.
                 if (estado.eventos.isEmpty()) {
                     Text(
                         text = "Aún no hay eventos registrados.",
@@ -126,6 +139,10 @@ private fun ItemHistorial(
     evento: EventoEntity,
     modifier: Modifier = Modifier,
 ) {
+    // A la izquierda, un circulito hueco: un Box de 14 dp con solo borde verde de 2 dp. Es decorativo, como el punto de una línea de tiempo.
+    //A la derecha, una Column con tres textos: título, fecha en verde y detalle en gris.
+    //verticalAlignment = Alignment.Top alinea el círculo con la primera línea, y el padding(top = 4.dp) lo centra visualmente con el título.
+    //Dates.formatearFecha(...) es tu función auxiliar que convierte milisegundos en un texto de fecha legible.
     Row(
         modifier = modifier.fillMaxWidth().padding(vertical = 8.dp),
         verticalAlignment = Alignment.Top,
@@ -156,7 +173,15 @@ private fun ItemHistorial(
 }
 
 /** Notas → lugar → etiqueta del tipo (reutiliza `ui/shared/EventoUi.kt`). */
+
+//Es una cadena de prioridades usando el operador elvis ?: (“si lo de la izquierda es null, usa lo de la derecha”):
+//
+//Si hay notas y no están vacías, muestra las notas.
+//Si no, y hay lugar no vacío, muestra el lugar.
+//Si no, muestra la etiqueta del tipo de evento (por ejemplo, “Desparasitación”).
 private fun detalleDe(evento: EventoEntity): String =
+    // takeIf { it.isNotBlank() } devuelve el texto solo si no está en blanco; si está vacío o con puros espacios, devuelve null y pasa al siguiente.
+    // Así la tercera línea siempre tiene algo que mostrar.
     evento.notas?.takeIf { it.isNotBlank() }
         ?: evento.lugar?.takeIf { it.isNotBlank() }
         ?: evento.tipo.etiqueta()

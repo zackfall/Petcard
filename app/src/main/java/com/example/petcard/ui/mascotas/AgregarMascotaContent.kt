@@ -33,7 +33,9 @@ import com.example.petcard.ui.theme.PetcardTheme
  */
 @Composable
 fun AgregarMascotaContent(
+    // estado: los datos actuales del formulario (lo que viene de uiState).
     estado: AgregarMascotaUiState,
+    // Los on...: funciones que se llaman cuando el usuario hace algo. Son las que Route conectó con vm::onNombreChange.
     onNombreChange: (String) -> Unit,
     onEspecieChange: (String) -> Unit,
     onRazaChange: (String) -> Unit,
@@ -51,6 +53,9 @@ fun AgregarMascotaContent(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         // --- Foto de la mascota ---
+        // Es un componente propio que muestra la foto de la mascota. Si fotoUri es null,
+        // muestra un icono de imagen como placeholder. Al hacer clic (clickable) se llama onElegirFoto,
+        // que abre el selector de fotos.
         FotoMascota(
             fotoUri = estado.fotoUri,
             modifier = Modifier
@@ -69,7 +74,9 @@ fun AgregarMascotaContent(
         // --- Nombre ---
         CampoTexto(
             etiqueta = "Nombre",
+            // valor: lo que se ve escrito (viene del estado).
             valor = estado.nombre,
+            // onValorChange: lo que se llama cuando el usuario escribe.
             onValorChange = onNombreChange,
             placeholder = "Ej. Max, Luna, Bobby",
         )
@@ -99,8 +106,10 @@ fun AgregarMascotaContent(
             keyboardType = KeyboardType.Number,
         )
 
+
         Button(
             onClick = onGuardar,
+            //enabled = estado.puedeGuardar: el botón está deshabilitado hasta que el formulario sea válido. Ahí se usa el puedeGuardar que vimos en onGuardar().
             enabled = estado.puedeGuardar,
             colors = ButtonDefaults.buttonColors(
                 containerColor = VerdeBoton,
@@ -109,6 +118,7 @@ fun AgregarMascotaContent(
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
         ) {
+            //El texto cambia según estado.guardando: muestra “Guardando...” mientras se guarda y “Listo ✓” el resto del tiempo.
             Text(if (estado.guardando) "Guardando..." else "Listo ✓")
         }
     }
@@ -130,8 +140,11 @@ private fun CampoTexto(
     ) {
         Text(etiqueta, style = MaterialTheme.typography.bodyMedium)
         OutlinedTextField(
+            //value y onValueChange: el campo muestra valor y avisa cuando el usuario escribe.
+            // Así el estado siempre es la “fuente de verdad”: el texto que ves es el que está en el ViewModel.
             value = valor,
             onValueChange = onValorChange,
+            // placeholder: texto gris de ejemplo que desaparece al escribir.
             placeholder = { Text(placeholder) },
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType),

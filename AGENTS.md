@@ -9,14 +9,17 @@ MVVM + Room como única fuente de verdad + repositorio + DI con Hilt:
 
 ```
 data/local/      → Room: *Entity, *Dao (lecturas Flow<T>, escrituras suspend fun), PetCardDatabase
-data/            → PetRepository (interfaz) + PetRepositoryImpl (@Inject constructor)
+data/            → PetRepository + AjustesRepository (interfaz) y sus *Impl (@Inject constructor)
 di/              → DatabaseModule + RepositoryModule (Hilt, @InstallIn(SingletonComponent::class))
-notifications/   → Notificaciones (canal + AlarmManager) + RecordatorioReceiver (dueño: shell-owner)
+notifications/   → Notificaciones (canal + avisos + AlarmManager) + RecordatorioReceiver (dueño: shell-owner)
 ui/navigation/   → Routes (rutas congeladas)
-ui/shell/        → PetCardScaffold (TopBar + BottomBar + NavHost), PetCardBottomBar, PlaceholderScreen
-ui/shared/       → EventoUi.kt (TipoEvento.etiqueta(), EventoRow, EventoItem, lineaEvento())
+ui/shell/        → PetCardScaffold (TopBar + BottomBar + NavHost), PetCardBottomBar
+ui/shared/       → EventoUi.kt (TipoEvento.etiqueta(), EventoRow, EventoItem, lineaEvento()), TituloSeccion
+ui/inicio/       → pantalla Inicio / Salud
+ui/mascotas/     → pantallas Lista, Perfil y Agregar mascota
 ui/eventos/      → pantallas Nuevo Evento + Eventos Pendientes (OCUPADAS, ver dueños)
 ui/calendario/   → pantalla Calendario (OCUPADA, ver dueños)
+ui/config/       → pantallas Configuración, Privacidad y Acerca
 util/            → Dates (fechas como Long = inicio del día local; horas como Int = min. desde medianoche)
 ```
 
@@ -30,7 +33,7 @@ Fechas: **prohibido `java.time`** (minSdk 24). Usar `Dates.inicioDiaMillis()`, `
 
 Cada pantalla = 3 archivos. Ejemplo real: `ui/eventos/NuevoEvento{ViewModel,Route,Content}.kt`.
 
-- `*ViewModel` — expone UN solo `StateFlow<UiState>` (+ `Channel` para eventos puntuales como navegación). Recibe `PetRepository` por constructor con `@HiltViewModel class SuViewModel @Inject constructor(repo)`. Lógica de guardado en `viewModelScope`. Jamás instancia la BD.
+- `*ViewModel` — expone UN solo `StateFlow<UiState>` (+ `Channel` para eventos puntuales como navegación). Recibe su repositorio por constructor con `@HiltViewModel class SuViewModel @Inject constructor(repo)` (datos con `PetRepository`; ajustes de pantalla con `AjustesRepository`). Lógica de guardado en `viewModelScope`. Jamás instancia la BD.
 - `*Route` (stateful) — crea el VM con `hiltViewModel()`, consume con `collectAsStateWithLifecycle()`, traduce eventos puntuales (ej. navegar atrás). Pasa **solo estado inmutable + lambdas** al Content. El repositorio **no** se pasa como parámetro: solo llega al VM vía Hilt.
 - `*Content` (stateless) — **PROHIBIDO recibir el ViewModel o el repositorio**. Solo datos + lambdas `() -> Unit`. Debe tener `@Preview`.
 
@@ -43,10 +46,11 @@ MiPantallaContent(viewModel = vm)
 
 ## Contratos congelados (no renombrar sin acuerdo del equipo)
 
-- Rutas (`ui/navigation/Routes.kt`): `inicio, mascotas, perfil_mascota/{mascotaId}, agregar_mascota, nuevo_evento, calendario, eventos_pendientes, configuracion, privacidad`. Navegación solo vía `NavHost` del shell, argumentos con `navArgument` (ver `PERFIL_MASCOTA`).
+- Rutas (`ui/navigation/Routes.kt`): `inicio, mascotas, perfil_mascota/{mascotaId}, agregar_mascota, nuevo_evento, calendario, eventos_pendientes, configuracion, privacidad, acerca`. Navegación solo vía `NavHost` del shell, argumentos con `navArgument` (ver `PERFIL_MASCOTA`).
 - Datos: `MascotaEntity(id, nombre, especie, raza, fechaNacimientoMillis, fotoUri, pesoKg)`, `EventoEntity(id, mascotaId, tipo, titulo, fechaMillis, horaMinutos?, lugar?, notas?, proximaMillis?, hecho)`, `TipoEvento(VACUNA, DESPARASITACION, CONTROL_VETERINARIO, MEDICACION, BANO, OTRO)`. Nueva columna Room = nueva versión de BD + migración (coordinar con el equipo).
-- Acceso a datos solo vía `PetRepository`. El ViewModel jamás toca un DAO.
+- Acceso a datos solo vía repositorios (`PetRepository`, `AjustesRepository`). El ViewModel jamás toca un DAO.
 - Recordatorios: `EventoEntity.proximaMillis` + `Notificaciones.programar/cancelar` (AlarmManager). La Route traduce el evento puntual del VM en programar/cancelar; el VM jamás toca `Context`. Permiso `POST_NOTIFICATIONS` se pide en `MainActivity`.
+- Avisos y tema de Configuración: estado real con `Notificaciones.avisosActivos/aplicarAvisos`; tema persistido con `AjustesRepository` (preferencias internas, no Room). El switch siempre refleja el estado real (se releé tras cada cambio).
 - TopBar (acciones del dueño del shell): flecha atrás en rutas no-raíz; en `inicio` van campana → `eventos_pendientes` y ajustes → `configuracion`; en `eventos_pendientes` va `+` → `nuevo_evento`.
 - Etiquetas de tipo y filas de evento: reutilizar `ui/shared/EventoUi.kt`, no duplicar formatos.
 
@@ -70,7 +74,7 @@ Convención: `feature/<qué-hace-la-pantalla>` (intuitivo, sin números de scree
 ## Zonas prohibidas por rama
 
 - Solo `feature/app-shell-barras-navegacion` toca: `MainActivity.kt`, `PetCardApplication.kt`, `AndroidManifest.xml`, `ui/shell/`, `ui/navigation/`, `ui/theme/`, `data/`, `di/`, `gradle/libs.versions.toml`, `*/build.gradle.kts`.
-- Las ramas de pantalla **solo añaden archivos en su carpeta** `ui/<area>/` y reemplazan su `PlaceholderScreen` por su `*Route` en el `NavHost` (una línea por pantalla).
+- Las ramas de pantalla **solo añaden archivos en su carpeta** `ui/<area>/` (pantallas nuevas: crear su entrada de una línea en el `NavHost` del shell).
 - ¿Necesitas un widget compartido? No lo dupliques: proponlo al dueño del shell para `ui/shared/`.
 
 ## Checklist del PR (contra la rúbrica)
@@ -79,7 +83,7 @@ Convención: `feature/<qué-hace-la-pantalla>` (intuitivo, sin números de scree
 2. Ningún `@Composable` hijo recibe ViewModel; estado vía `collectAsStateWithLifecycle()`. [UI 2.5]
 3. Su ViewModel expone un único `StateFlow<UiState>`; escrituras en `viewModelScope`. [MVVM 2.0]
 4. Lecturas vía `Flow` del repositorio; escrituras con `suspend fun`; nada de I/O en hilo principal. [Room 2.5]
-5. ViewModel depende de `PetRepository` (interfaz), inyectado con Hilt (`@HiltViewModel` + `@Inject constructor` + `hiltViewModel()`). [Repo 1.5 + DI 1.5]
+5. ViewModel depende de un repositorio (interfaz `PetRepository` / `AjustesRepository`), inyectado con Hilt (`@HiltViewModel` + `@Inject constructor` + `hiltViewModel()`). [Repo 1.5 + DI 1.5]
 6. Navegación declarada en el `NavHost` central, sin rutas hardcodeadas sueltas. [Nav 1.5]
 7. `@Preview` en cada `*Content`.
 8. Cada integrante debe tener **commits visibles** en el repo nube (sin commits = 0 en la nota grupal).

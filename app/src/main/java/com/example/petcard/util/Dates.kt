@@ -15,6 +15,10 @@ import java.util.Locale
 object Dates {
     const val MILLIS_POR_DIA = 24L * 60L * 60L * 1000L
 
+    /** Regla civil: múltiplo de 4, salvo los siglos que no son múltiplo de 400. */
+    fun esBisiesto(anio: Int): Boolean =
+        (anio % 4 == 0 && anio % 100 != 0) || anio % 400 == 0
+
     fun inicioDiaMillis(anio: Int, mes1a12: Int, dia: Int): Long {
         val cal = Calendar.getInstance()
         cal.set(Calendar.YEAR, anio)

@@ -14,7 +14,10 @@ fun MascotasRoute(
     alNuevoEvento: (MascotaEntity) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // Pide a Hilt el MascotasViewModel (lo crea con sus dependencias si no existe, o devuelve el que ya existe).
     val viewModel: MascotasViewModel = hiltViewModel()
+    // Observa el estado del ViewModel (la lista de mascotas y si está cargando). Cada vez que cambia, la pantalla se redibuja.
+    // Se detiene sola cuando la app está en segundo plano.
     val estado by viewModel.estado.collectAsStateWithLifecycle()
 
     MascotasContent(

@@ -7,11 +7,20 @@ import com.example.petcard.data.local.MascotaEntity
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
+// PetRepositoryImpl es la implementación real del contrato PetRepository: cada función simplemente le pasa la tarea al DAO correcto (MascotaDao o EventoDao),
+// y así los ViewModels quedan aislados de los detalles de la base de datos.
+
 /** Implementación Room del [PetRepository]. */
+
+// : PetRepository: significa “esta clase implementa la interfaz”. Está obligada a escribir todas las funciones del contrato.
+// @Inject constructor: igual que en los ViewModels, Hilt crea esta clase y le entrega lo que necesita.
 class PetRepositoryImpl @Inject constructor(
+    // MascotaDao y EventoDao: son sus dependencias. Un DAO (Data Access Object) es la pieza de Room que habla directamente con la base de datos mediante consultas SQL.
     private val mascotaDao: MascotaDao,
     private val eventoDao: EventoDao,
 ) : PetRepository {
+    // override: indica que estás escribiendo la versión real de una función declarada en la interfaz.
+    // = mascotaDao.observarTodas(): es una función de una sola expresión. Simplemente devuelve lo que responde el DAO.
     override fun observarMascotas(): Flow<List<MascotaEntity>> = mascotaDao.observarTodas()
     override fun observarMascota(id: Long): Flow<MascotaEntity?> = mascotaDao.observarPorId(id)
     override suspend fun guardarMascota(mascota: MascotaEntity): Long = mascotaDao.insertar(mascota)

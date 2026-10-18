@@ -30,7 +30,7 @@ class PerfilMascotaViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    //Aquí se resuelve la duda de PerfilMascotaRoute. Cuando navegas a algo como "perfil/5", el 5 queda guardado en SavedStateHandle bajo el nombre Routes.ARG_MASCOTA_ID (una constante de tu archivo de rutas).
+    //Aquí se resuelve la duda de PerfilMascotaRoute. Cuando navegas a algo como "perfil/5", el 5 queda guardado en SavedStateHandle bajo el nombre Routes.ARG_MASCOTA_ID.
     //
     //savedStateHandle[...]: lee el argumento.
     //?: -1L: si no existe, usa -1. Ninguna mascota real tiene ese id (los ids autogenerados empiezan en 1), así que las consultas devolverían null
@@ -53,15 +53,15 @@ class PerfilMascotaViewModel @Inject constructor(
         //cargando = false: si llegó el primer resultado, ya cargó.
         //mascota = mascota: puede ser null si no existe, y de ahí sale encontrada = false.
         //sortedByDescending { it.fechaMillis }: ordena los eventos del más reciente al más antiguo. Por eso el historial muestra arriba lo último que pasó.
-        // Nota que el orden se hace aquí y no en la consulta SQL.
         PerfilMascotaUiState(
             cargando = false,
             mascota = mascota,
             eventos = eventos.sortedByDescending { it.fechaMillis },
         )
 
-        //viewModelScope: vive mientras viva el ViewModel.
-        //WhileSubscribed(5_000): solo escucha la base de datos mientras alguien observa, y espera 5 segundos antes de parar (para sobrevivir a una rotación de pantalla).
-        //PerfilMascotaUiState(): el valor inicial, con cargando = true.
+        // viewModelScope: el flujo vive mientras viva el ViewModel (que sobrevive a la rotación).
+        // WhileSubscribed(5_000): solo escucha la base de datos mientras alguien observa,
+        // y espera 5 segundos antes de parar, para no reiniciar la consulta al rotar la pantalla.
+        // PerfilMascotaUiState(): el valor inicial, con cargando = true.
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), PerfilMascotaUiState())
 }

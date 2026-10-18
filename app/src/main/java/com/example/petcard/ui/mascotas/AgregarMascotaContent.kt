@@ -116,7 +116,7 @@ fun AgregarMascotaContent(
             keyboardType = KeyboardType.Decimal,
         )
 
-        // El ?.let significa: “si error no es null, muestra el texto”. Si no hay error, no aparece nada. Se pinta con el color de error del tema
+        // El ?.let significa: “si error no es null, muestra el texto”. Si no hay error, no aparece nada.
         estado.error?.let { mensaje ->
             Text(
                 text = mensaje,

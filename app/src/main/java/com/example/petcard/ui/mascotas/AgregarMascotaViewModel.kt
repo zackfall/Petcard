@@ -25,12 +25,18 @@ sealed interface AgregarMascotaEvent {
     data class Guardado(val mascotaId: Long) : AgregarMascotaEvent
 }
 
+//@HiltViewModel: marca la clase como ViewModel que Hilt puede crear.
+//@Inject constructor: le dice a Hilt qué constructor usar y que entregue los parámetros.
+//hiltViewModel(): pide a Hilt el ViewModel de esa pantalla (o el que ya existe).
 @HiltViewModel
 class AgregarMascotaViewModel @Inject constructor(
     private val repositorio: PetRepository,
 ) : ViewModel() {
 
+    //// MutableStateFlow(...) = Una caja que guarda un valor y avisa a quien la observe cada vez que cambia.
+    //// AgregarMascotaUiState() = El estado inicial: todos los campos vacíos, sin foto, sin guardar y sin error.
     private val formulario = MutableStateFlow(AgregarMascotaUiState())
+    //// Versión de solo lectura del estado: la pantalla lo observa, pero no lo puede cambiar.
     val uiState: StateFlow<AgregarMascotaUiState> = formulario.asStateFlow()
 
     private val _eventos = Channel<AgregarMascotaEvent>(Channel.BUFFERED)

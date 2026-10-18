@@ -13,11 +13,10 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface MascotaDao {
     // Lecturas reactivas: la UI se actualiza sola cuando cambia la BD.
-    // @Query("..."): contiene una consulta SQL escrita por ti.
     //SELECT * FROM mascotas: “trae todas las columnas de todas las filas de la tabla mascotas”.
     //ORDER BY nombre ASC: ordénalas por nombre, de la A a la Z. Por eso tu lista de mascotas aparece en orden alfabético sin que lo hagas en Kotlin.
     //Flow<List<MascotaEntity>>: devuelve un flujo reactivo. Room vuelve a ejecutar la consulta y emite la lista nueva cada vez que la tabla cambia.
-    // Esto es lo que hace que MascotasViewModel se actualice solo al eliminar una mascota, como vimos antes.
+    // Esto es lo que hace que MascotasViewModel se actualice solo al eliminar una mascota.
     @Query("SELECT * FROM mascotas ORDER BY nombre ASC")
     fun observarTodas(): Flow<List<MascotaEntity>>
 

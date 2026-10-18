@@ -67,6 +67,7 @@ fun AgregarMascotaRoute(
         }
     }
 
+    // Este bloque es donde Route llama al Content y le entrega todo lo que necesita para dibujar el formulario y avisar lo que hace el usuario.
     AgregarMascotaContent(
         estado = estado,
         onNombreChange = vm::onNombreChange,

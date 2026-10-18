@@ -24,7 +24,7 @@ data class AgregarMascotaUiState(
     //Convierte el texto de la edad en un número válido
     //.trim(): quita espacios al inicio y al final.
     //.toIntOrNull(): intenta convertir a Int. Si no se puede (vacío, o letras), devuelve null en vez de dar error.
-    //.takeIf { it in 0..200 }: solo acepta el número si está entre 0 y 200. Si no, devuelve null.
+    //.takeIf { it in 0..200 }: solo acepta el número si está entre 0 y 20. Si no, devuelve null.
     val edadAnosInt: Int?
         get() = edadAnos.trim().toIntOrNull()?.takeIf { it in 0..20 }
 

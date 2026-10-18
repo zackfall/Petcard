@@ -39,13 +39,15 @@ private fun guardarCopia(contexto: Context, origen: Uri): File? {
     //Crea la carpeta fotos dentro del almacenamiento privado si no existe (mkdirs()). CARPETA_FOTOS es una constante privada con el nombre "fotos".
     val dir = File(contexto.filesDir, CARPETA_FOTOS).apply { mkdirs() }
 
-    //Le pregunta al sistema qué tipo de archivo es (por ejemplo image/png), se queda con lo que va después de la / (png) y lo usa de extensión.
-    // Si no puede saberlo, usa "jpg" por defecto.
+    // Averigua el formato de la foto elegida (ej. image/png) y toma lo que va después
+    // de la "/" (png) para usarlo como extensión del archivo.
+    // Si el sistema no lo sabe, usa "jpg" por defecto.
     val extension = contexto.contentResolver.getType(origen)
         ?.substringAfterLast('/', "")
         ?.takeIf { it.isNotBlank() } ?: "jpg"
 
-    //Usa la hora actual en milisegundos, por ejemplo mascota_1729123456789.png. Así dos fotos nunca se pisan.
+    // Arma la ruta del archivo nuevo usando la hora actual en milisegundos
+    // (ej. mascota_1729123456789.png), para que dos fotos no tengan el mismo nombre.
     val archivo = File(dir, "mascota_${System.currentTimeMillis()}.$extension")
 
     //Abre la foto original para leerla (openInputStream). Si no puede, devuelve null.

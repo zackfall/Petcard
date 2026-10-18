@@ -18,11 +18,11 @@ data class PerfilMascotaUiState(
     val mascota: MascotaEntity? = null,
     val eventos: List<EventoEntity> = emptyList(),
 ) {
-    //Es true si hay una mascota y false si es null. Es la que usaba el when de PerfilMascotaContent:
+    //Es true si hay una mascota y false si es null.
     val encontrada: Boolean get() = mascota != null
 
     /** "Golden Retriever • 3 años" (diseño screen-container-2). */
-    // Confirma lo que supusimos: usa la función de extensión lineaPerfil() del archivo de utilidades, que produce “Golden Retriever • 3 años”. Por partes:
+    // usa la función de extensión lineaPerfil() del archivo de utilidades, que produce “Golden Retriever • 3 años”. Por partes:
     //
     //mascota?.lineaPerfil(): el ?. llama a la función solo si mascota no es null; si es null, devuelve null.
     //.orEmpty(): convierte ese posible null en un texto vacío "". Así subtitulo siempre es un String normal y nunca String?.
